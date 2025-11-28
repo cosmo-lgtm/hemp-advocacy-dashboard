@@ -1,5 +1,6 @@
 streamlit>=1.29.0
 google-cloud-bigquery>=3.13.0
+google-auth>=2.0.0
 pandas>=2.0.0
 plotly>=5.18.0
 pydeck>=0.8.0
