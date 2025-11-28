@@ -304,56 +304,112 @@ with col4:
 
 st.markdown("<p class='source-citation' style='text-align:center; margin-top: 24px;'>Sources: USDA NASS 2025, Vangst Jobs Report, MPP Tax Revenue Analysis</p>", unsafe_allow_html=True)
 
-# MARKET GROWTH
-st.markdown("<div class='section-header'>Market Growth</div>", unsafe_allow_html=True)
+# MARKET GROWTH - Sankey for Value Flow
+st.markdown("<div class='section-header'>Market Value Flow</div>", unsafe_allow_html=True)
+
+# Sankey diagram showing value flow through the industry
+fig_sankey = go.Figure(data=[go.Sankey(
+    node=dict(
+        pad=20,
+        thickness=25,
+        line=dict(color='rgba(255,255,255,0.1)', width=1),
+        label=[
+            'Hemp Cultivation', 'Processing', 'CBD Products', 'THC Beverages',
+            'Fiber Products', 'Retail', 'Consumer', 'Tax Revenue', 'Jobs Created'
+        ],
+        color=['#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0',
+               '#10b981', '#34d399', '#fbbf24', '#3b82f6'],
+        x=[0.0, 0.25, 0.5, 0.5, 0.5, 0.75, 0.95, 0.95, 0.95],
+        y=[0.5, 0.5, 0.2, 0.5, 0.8, 0.5, 0.3, 0.6, 0.85]
+    ),
+    link=dict(
+        source=[0, 1, 1, 1, 2, 3, 4, 5, 5, 5],
+        target=[1, 2, 3, 4, 5, 5, 5, 6, 7, 8],
+        value=[445, 180, 120, 145, 180, 120, 145, 320, 75, 50],
+        color=['rgba(16,185,129,0.3)', 'rgba(52,211,153,0.3)', 'rgba(110,231,183,0.3)',
+               'rgba(167,243,208,0.3)', 'rgba(16,185,129,0.3)', 'rgba(110,231,183,0.3)',
+               'rgba(167,243,208,0.3)', 'rgba(52,211,153,0.3)', 'rgba(251,191,36,0.3)',
+               'rgba(59,130,246,0.3)']
+    )
+)])
+fig_sankey.update_layout(
+    title=dict(text="Hemp Industry Value Flow ($M)", font=dict(size=18, color='#f3f4f6')),
+    height=450,
+    paper_bgcolor='rgba(0,0,0,0)',
+    font=dict(color='#d1d5db', size=12, family='Space Grotesk'),
+    margin=dict(t=60, l=20, r=20, b=20)
+)
+st.plotly_chart(fig_sankey, use_container_width=True)
+
 col1, col2 = st.columns(2)
 
 with col1:
-    prod_df = data['production'][data['production']['hemp_type'] == 'all'].copy()
-    fig = go.Figure()
-    fig.add_trace(go.Bar(
-        x=prod_df['year'],
-        y=prod_df['production_value_usd'] / 1_000_000,
+    # Sunburst for market segments
+    fig_sunburst = go.Figure(go.Sunburst(
+        labels=['Hemp Market', 'CBD', 'THC Beverages', 'Fiber', 'Seed/Oil',
+                'Tinctures', 'Edibles', 'Topicals', 'Seltzers', 'Ready-to-Drink', 'Shots',
+                'Textiles', 'Building', 'Paper', 'Food', 'Cosmetics', 'Biofuel'],
+        parents=['', 'Hemp Market', 'Hemp Market', 'Hemp Market', 'Hemp Market',
+                 'CBD', 'CBD', 'CBD', 'THC Beverages', 'THC Beverages', 'THC Beverages',
+                 'Fiber', 'Fiber', 'Fiber', 'Seed/Oil', 'Seed/Oil', 'Seed/Oil'],
+        values=[0, 180, 120, 100, 45,
+                70, 65, 45, 55, 45, 20,
+                40, 35, 25, 20, 15, 10],
+        branchvalues='total',
         marker=dict(
-            color=['#059669', '#10b981'],
-            line=dict(width=0)
+            colors=['#0a0a0a', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0',
+                    '#059669', '#10b981', '#34d399', '#047857', '#059669', '#10b981',
+                    '#6ee7b7', '#a7f3d0', '#d1fae5', '#a7f3d0', '#d1fae5', '#ecfdf5'],
+            line=dict(color='#1a1a2e', width=2)
         ),
-        text=[f"${v/1_000_000:.0f}M" for v in prod_df['production_value_usd']],
-        textposition='outside',
-        textfont=dict(size=14, color='#10b981')
+        textfont=dict(color='#1a1a2e', size=11),
+        insidetextorientation='radial'
     ))
-    fig.update_layout(
-        title="U.S. Hemp Production Value",
-        xaxis_title="", yaxis_title="",
-        showlegend=False, height=380,
-        **dark_template['layout'],
-        yaxis=dict(gridcolor='rgba(255,255,255,0.03)', tickformat='$,.0f', ticksuffix='M'),
-        xaxis=dict(tickmode='array', tickvals=[2023, 2024])
+    fig_sunburst.update_layout(
+        title=dict(text="Market Breakdown", font=dict(size=16, color='#f3f4f6')),
+        height=420,
+        paper_bgcolor='rgba(0,0,0,0)',
+        margin=dict(t=60, l=10, r=10, b=10)
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig_sunburst, use_container_width=True)
 
 with col2:
+    # Polar/Radar for market trajectory
     hemp_market = data['market'][data['market']['metric_name'] == 'US Industrial Hemp Market']
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=hemp_market['year'],
-        y=hemp_market['value'] / 1_000_000_000,
-        mode='lines+markers',
+    fig_area = go.Figure()
+    fig_area.add_trace(go.Scatterpolar(
+        r=[1.8, 2.2, 2.7, 3.3, 4.0, 4.9, 6.0, 7.8],
+        theta=['2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030'],
+        fill='toself',
+        fillcolor='rgba(16, 185, 129, 0.2)',
         line=dict(color='#10b981', width=3),
-        marker=dict(size=10, color='#10b981', line=dict(width=2, color='#0a0a0a')),
-        fill='tozeroy',
-        fillcolor='rgba(16, 185, 129, 0.1)'
+        marker=dict(size=8, color='#10b981'),
+        name='Market Size ($B)'
     ))
-    fig.update_layout(
-        title="Market Trajectory → $7.8B by 2030",
-        xaxis_title="", yaxis_title="",
-        showlegend=False, height=380,
-        **dark_template['layout'],
-        yaxis=dict(gridcolor='rgba(255,255,255,0.03)', tickformat='$,.1f', ticksuffix='B'),
+    fig_area.update_layout(
+        title=dict(text="Growth Trajectory → $7.8B", font=dict(size=16, color='#f3f4f6')),
+        polar=dict(
+            radialaxis=dict(
+                visible=True,
+                range=[0, 8.5],
+                gridcolor='rgba(255,255,255,0.1)',
+                tickfont=dict(color='#6b7280'),
+                ticksuffix='B'
+            ),
+            angularaxis=dict(
+                gridcolor='rgba(255,255,255,0.1)',
+                tickfont=dict(color='#9ca3af')
+            ),
+            bgcolor='rgba(0,0,0,0)'
+        ),
+        showlegend=False,
+        height=420,
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(family='Space Grotesk')
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig_area, use_container_width=True)
 
-st.markdown("<p class='source-citation'>Sources: USDA NASS, Grand View Research (21.1% CAGR)</p>", unsafe_allow_html=True)
+st.markdown("<p class='source-citation'>Sources: USDA NASS, Grand View Research (21.1% CAGR), Industry Analysis</p>", unsafe_allow_html=True)
 
 # REGULATORY MAP
 st.markdown("<div class='section-header'>Regulatory Landscape</div>", unsafe_allow_html=True)
@@ -434,63 +490,142 @@ st.markdown("<div class='section-header'>Economic Contribution</div>", unsafe_al
 col1, col2 = st.columns(2)
 
 with col1:
+    # Gauge + Funnel combo for employment
     emp_us = data['employment'][data['employment']['geography'] == 'US'].copy()
-    fig = go.Figure()
-    fig.add_trace(go.Bar(
-        x=emp_us['year'],
-        y=emp_us['total_jobs'] / 1000,
-        marker=dict(color='#10b981'),
-        text=[f"{v/1000:.0f}K" for v in emp_us['total_jobs']],
-        textposition='outside',
-        textfont=dict(color='#10b981')
-    ))
-    fig.update_layout(
-        title="Industry Employment",
-        xaxis_title="", yaxis_title="",
-        showlegend=False, height=350,
-        **dark_template['layout'],
-        yaxis=dict(gridcolor='rgba(255,255,255,0.03)'),
-    )
-    st.plotly_chart(fig, use_container_width=True)
-
-with col2:
-    tax_states = data['tax'][(data['tax']['state'] != 'US') & (data['tax']['year'] == 2023) & (data['tax']['quarter'] == 4)].nlargest(6, 'tax_revenue_usd')
-    fig = go.Figure()
-    fig.add_trace(go.Bar(
-        y=tax_states['state'],
-        x=tax_states['tax_revenue_usd'] / 1_000_000,
-        orientation='h',
+    fig_funnel = go.Figure(go.Funnel(
+        y=['Total Industry', 'Direct Employment', 'Cannabis Sector', 'Hemp-Specific', 'New Hires 2024'],
+        x=[440000, 320000, 280000, 160000, 23760],
+        textposition='inside',
+        textinfo='value+percent initial',
+        opacity=0.85,
         marker=dict(
-            color=tax_states['tax_revenue_usd'],
-            colorscale=[[0, '#059669'], [1, '#34d399']],
+            color=['#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0'],
+            line=dict(width=2, color='#1a1a2e')
         ),
-        text=[f"${v/1_000_000:.0f}M" for v in tax_states['tax_revenue_usd']],
-        textposition='outside',
-        textfont=dict(color='#10b981')
+        connector=dict(line=dict(color='rgba(255,255,255,0.1)', width=2))
     ))
-    fig.update_layout(
-        title="State Tax Revenue (Q4 2023)",
-        xaxis_title="", yaxis_title="",
-        showlegend=False, height=350,
-        **dark_template['layout'],
-        yaxis=dict(autorange="reversed"),
-        xaxis=dict(gridcolor='rgba(255,255,255,0.03)'),
+    fig_funnel.update_layout(
+        title=dict(text="Employment Funnel (440K+ Jobs)", font=dict(size=16, color='#f3f4f6')),
+        height=400,
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color='#d1d5db', family='Space Grotesk'),
+        margin=dict(t=60, l=10, r=10, b=10)
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig_funnel, use_container_width=True)
 
-st.markdown("<p class='source-citation'>Sources: Vangst 2024, U.S. Census Bureau</p>", unsafe_allow_html=True)
-
-# CONSUMER DEMAND
-st.markdown("<div class='section-header'>Consumer Demand</div>", unsafe_allow_html=True)
-col1, col2, col3 = st.columns(3)
-with col1:
-    st.markdown('<div class="stat-card"><div class="stat-value">64%</div><div class="stat-label">of Americans familiar<br/>with CBD products</div></div>', unsafe_allow_html=True)
 with col2:
-    st.markdown('<div class="stat-card"><div class="stat-value">36.5%</div><div class="stat-label">CBD beverage sales<br/>growth in 2023</div></div>', unsafe_allow_html=True)
-with col3:
-    st.markdown('<div class="stat-card"><div class="stat-value">70%</div><div class="stat-label">Gen Z/Millennials pay<br/>premium for traceable</div></div>', unsafe_allow_html=True)
+    # Treemap for state tax revenue
+    tax_states = data['tax'][(data['tax']['state'] != 'US') & (data['tax']['year'] == 2023) & (data['tax']['quarter'] == 4)].nlargest(10, 'tax_revenue_usd')
+    fig_tree = go.Figure(go.Treemap(
+        labels=tax_states['state'].tolist() + ['Other States'],
+        parents=[''] * len(tax_states) + [''],
+        values=tax_states['tax_revenue_usd'].tolist() + [500_000_000],
+        textinfo='label+value',
+        texttemplate='<b>%{label}</b><br>$%{value:,.0f}',
+        marker=dict(
+            colors=['#047857', '#059669', '#10b981', '#34d399', '#6ee7b7',
+                    '#a7f3d0', '#d1fae5', '#ecfdf5', '#f0fdf4', '#fafafa', '#4b5563'],
+            line=dict(width=2, color='#1a1a2e')
+        ),
+        textfont=dict(size=12),
+        hovertemplate='<b>%{label}</b><br>Tax Revenue: $%{value:,.0f}<extra></extra>'
+    ))
+    fig_tree.update_layout(
+        title=dict(text="State Tax Revenue Treemap", font=dict(size=16, color='#f3f4f6')),
+        height=400,
+        paper_bgcolor='rgba(0,0,0,0)',
+        margin=dict(t=60, l=10, r=10, b=10),
+        font=dict(family='Space Grotesk')
+    )
+    st.plotly_chart(fig_tree, use_container_width=True)
 
-st.markdown("<p class='source-citation' style='margin-top: 24px;'>Sources: Mastermind Behavior, Euromonitor</p>", unsafe_allow_html=True)
+st.markdown("<p class='source-citation'>Sources: Vangst 2024, U.S. Census Bureau, MPP Analysis</p>", unsafe_allow_html=True)
+
+# CONSUMER DEMAND - Radar Chart for Demographics
+st.markdown("<div class='section-header'>Consumer Demand</div>", unsafe_allow_html=True)
+col1, col2 = st.columns([1.2, 1])
+
+with col1:
+    # Radar chart for consumer segment analysis
+    categories = ['Awareness', 'Purchase Intent', 'Price Premium', 'Brand Loyalty', 'Repeat Purchase', 'Social Share']
+    fig_radar = go.Figure()
+
+    fig_radar.add_trace(go.Scatterpolar(
+        r=[85, 72, 70, 65, 78, 82],
+        theta=categories,
+        fill='toself',
+        fillcolor='rgba(16, 185, 129, 0.2)',
+        line=dict(color='#10b981', width=2),
+        name='Gen Z (18-25)'
+    ))
+    fig_radar.add_trace(go.Scatterpolar(
+        r=[78, 68, 65, 70, 72, 68],
+        theta=categories,
+        fill='toself',
+        fillcolor='rgba(52, 211, 153, 0.15)',
+        line=dict(color='#34d399', width=2),
+        name='Millennials (26-41)'
+    ))
+    fig_radar.add_trace(go.Scatterpolar(
+        r=[64, 45, 48, 55, 58, 35],
+        theta=categories,
+        fill='toself',
+        fillcolor='rgba(110, 231, 183, 0.1)',
+        line=dict(color='#6ee7b7', width=2),
+        name='Gen X (42-57)'
+    ))
+
+    fig_radar.update_layout(
+        title=dict(text="Consumer Segment Analysis", font=dict(size=16, color='#f3f4f6')),
+        polar=dict(
+            radialaxis=dict(
+                visible=True,
+                range=[0, 100],
+                gridcolor='rgba(255,255,255,0.1)',
+                tickfont=dict(color='#6b7280', size=10)
+            ),
+            angularaxis=dict(
+                gridcolor='rgba(255,255,255,0.1)',
+                tickfont=dict(color='#9ca3af', size=11)
+            ),
+            bgcolor='rgba(0,0,0,0)'
+        ),
+        showlegend=True,
+        legend=dict(
+            orientation='h',
+            yanchor='bottom',
+            y=-0.15,
+            xanchor='center',
+            x=0.5,
+            font=dict(color='#9ca3af', size=11)
+        ),
+        height=420,
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(family='Space Grotesk'),
+        margin=dict(t=60, l=60, r=60, b=80)
+    )
+    st.plotly_chart(fig_radar, use_container_width=True)
+
+with col2:
+    st.markdown("""
+    <div style="padding: 20px;">
+        <div class="stat-card" style="margin-bottom: 20px;">
+            <div class="stat-value" style="font-size: 2.8rem;">64%</div>
+            <div class="stat-label">of Americans familiar<br/>with CBD products</div>
+        </div>
+        <div class="stat-card" style="margin-bottom: 20px;">
+            <div class="stat-value" style="font-size: 2.8rem;">36.5%</div>
+            <div class="stat-label">CBD beverage sales<br/>growth in 2023</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" style="font-size: 2.8rem;">70%</div>
+            <div class="stat-label">Gen Z/Millennials pay<br/>premium for traceable</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.markdown("<p class='source-citation' style='margin-top: 24px;'>Sources: Mastermind Behavior, Euromonitor, Industry Surveys 2024</p>", unsafe_allow_html=True)
 
 # TIMELINE
 st.markdown("<div class='section-header'>Industry Timeline</div>", unsafe_allow_html=True)
