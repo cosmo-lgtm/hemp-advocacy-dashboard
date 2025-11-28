@@ -87,10 +87,14 @@ st.markdown("""
 # Initialize BigQuery client
 @st.cache_resource
 def get_bq_client():
-    credentials = service_account.Credentials.from_service_account_info(
-        st.secrets["gcp_service_account"]
-    )
-    return bigquery.Client(credentials=credentials, project="artful-logic-475116-p1")
+    try:
+        credentials = service_account.Credentials.from_service_account_info(
+            dict(st.secrets["gcp_service_account"])
+        )
+        return bigquery.Client(credentials=credentials, project="artful-logic-475116-p1")
+    except Exception as e:
+        st.error(f"Failed to connect to BigQuery: {e}")
+        st.stop()
 
 @st.cache_data(ttl=3600)
 def load_data(query):
