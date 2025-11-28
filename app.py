@@ -349,68 +349,73 @@ st.plotly_chart(fig_sankey, use_container_width=True)
 col1, col2 = st.columns(2)
 
 with col1:
-    # Sunburst for market segments
-    fig_sunburst = go.Figure(go.Sunburst(
-        labels=['Hemp Market', 'CBD', 'THC Beverages', 'Fiber', 'Seed/Oil',
-                'Tinctures', 'Edibles', 'Topicals', 'Seltzers', 'Ready-to-Drink', 'Shots',
-                'Textiles', 'Building', 'Paper', 'Food', 'Cosmetics', 'Biofuel'],
-        parents=['', 'Hemp Market', 'Hemp Market', 'Hemp Market', 'Hemp Market',
-                 'CBD', 'CBD', 'CBD', 'THC Beverages', 'THC Beverages', 'THC Beverages',
-                 'Fiber', 'Fiber', 'Fiber', 'Seed/Oil', 'Seed/Oil', 'Seed/Oil'],
-        values=[0, 180, 120, 100, 45,
-                70, 65, 45, 55, 45, 20,
-                40, 35, 25, 20, 15, 10],
-        branchvalues='total',
+    # Donut chart for market segments
+    fig_donut = go.Figure(data=[go.Pie(
+        labels=['CBD Products', 'THC Beverages', 'Fiber Products', 'Seed & Oil'],
+        values=[180, 120, 100, 45],
+        hole=0.6,
         marker=dict(
-            colors=['#0a0a0a', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0',
-                    '#059669', '#10b981', '#34d399', '#047857', '#059669', '#10b981',
-                    '#6ee7b7', '#a7f3d0', '#d1fae5', '#a7f3d0', '#d1fae5', '#ecfdf5'],
+            colors=['#10b981', '#34d399', '#6ee7b7', '#a7f3d0'],
             line=dict(color='#1a1a2e', width=2)
         ),
-        textfont=dict(color='#1a1a2e', size=11),
-        insidetextorientation='radial'
-    ))
-    fig_sunburst.update_layout(
-        title=dict(text="Market Breakdown", font=dict(size=16, color='#f3f4f6')),
+        textinfo='label+percent',
+        textposition='outside',
+        textfont=dict(color='#d1d5db', size=12),
+        hovertemplate='<b>%{label}</b><br>$%{value}M<br>%{percent}<extra></extra>'
+    )])
+    fig_donut.add_annotation(
+        text='<b>$445M</b><br>Total',
+        x=0.5, y=0.5,
+        font=dict(size=20, color='#10b981', family='Space Grotesk'),
+        showarrow=False
+    )
+    fig_donut.update_layout(
+        title=dict(text="Market Breakdown by Segment", font=dict(size=16, color='#f3f4f6')),
         height=420,
         paper_bgcolor='rgba(0,0,0,0)',
-        margin=dict(t=60, l=10, r=10, b=10)
+        showlegend=False,
+        margin=dict(t=60, l=20, r=20, b=20)
     )
-    st.plotly_chart(fig_sunburst, use_container_width=True)
+    st.plotly_chart(fig_donut, use_container_width=True)
 
 with col2:
-    # Polar/Radar for market trajectory
-    hemp_market = data['market'][data['market']['metric_name'] == 'US Industrial Hemp Market']
+    # Area chart for market growth trajectory
+    years = [2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030]
+    values = [1.8, 2.2, 2.7, 3.3, 4.0, 4.9, 6.0, 7.8]
     fig_area = go.Figure()
-    fig_area.add_trace(go.Scatterpolar(
-        r=[1.8, 2.2, 2.7, 3.3, 4.0, 4.9, 6.0, 7.8],
-        theta=['2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030'],
-        fill='toself',
-        fillcolor='rgba(16, 185, 129, 0.2)',
+    fig_area.add_trace(go.Scatter(
+        x=years,
+        y=values,
+        mode='lines+markers+text',
+        fill='tozeroy',
+        fillcolor='rgba(16, 185, 129, 0.15)',
         line=dict(color='#10b981', width=3),
-        marker=dict(size=8, color='#10b981'),
-        name='Market Size ($B)'
+        marker=dict(size=10, color='#10b981', line=dict(width=2, color='#0a0a0a')),
+        text=[f'${v}B' for v in values],
+        textposition='top center',
+        textfont=dict(color='#10b981', size=11),
+        hovertemplate='<b>%{x}</b><br>$%{y}B<extra></extra>'
     ))
     fig_area.update_layout(
-        title=dict(text="Growth Trajectory → $7.8B", font=dict(size=16, color='#f3f4f6')),
-        polar=dict(
-            radialaxis=dict(
-                visible=True,
-                range=[0, 8.5],
-                gridcolor='rgba(255,255,255,0.1)',
-                tickfont=dict(color='#6b7280'),
-                ticksuffix='B'
-            ),
-            angularaxis=dict(
-                gridcolor='rgba(255,255,255,0.1)',
-                tickfont=dict(color='#9ca3af')
-            ),
-            bgcolor='rgba(0,0,0,0)'
-        ),
-        showlegend=False,
+        title=dict(text="Market Growth Trajectory (21.1% CAGR)", font=dict(size=16, color='#f3f4f6')),
         height=420,
         paper_bgcolor='rgba(0,0,0,0)',
-        font=dict(family='Space Grotesk')
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(family='Space Grotesk', color='#9ca3af'),
+        xaxis=dict(
+            gridcolor='rgba(255,255,255,0.05)',
+            tickfont=dict(color='#9ca3af'),
+            dtick=1
+        ),
+        yaxis=dict(
+            gridcolor='rgba(255,255,255,0.05)',
+            tickfont=dict(color='#9ca3af'),
+            tickprefix='$',
+            ticksuffix='B',
+            range=[0, 9]
+        ),
+        margin=dict(t=60, l=60, r=20, b=40),
+        showlegend=False
     )
     st.plotly_chart(fig_area, use_container_width=True)
 
