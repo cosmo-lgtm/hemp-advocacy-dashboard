@@ -307,33 +307,38 @@ st.markdown("<p class='source-citation' style='text-align:center; margin-top: 24
 # MARKET GROWTH - Sankey for Value Flow
 st.markdown("<div class='section-header'>Market Value Flow</div>", unsafe_allow_html=True)
 
-# Sankey diagram showing value flow through the industry
+# Sankey diagram showing dollar value flow through the industry
 fig_sankey = go.Figure(data=[go.Sankey(
     node=dict(
         pad=20,
         thickness=25,
         line=dict(color='rgba(255,255,255,0.1)', width=1),
         label=[
-            'Hemp Cultivation', 'Processing', 'CBD Products', 'THC Beverages',
-            'Fiber Products', 'Retail', 'Consumer', 'Tax Revenue', 'Jobs Created'
+            'Hemp Production<br>$445M',
+            'Processing &<br>Manufacturing',
+            'CBD Products<br>$180M',
+            'THC Beverages<br>$120M',
+            'Fiber/Grain<br>$145M',
+            'Wholesale &<br>Distribution',
+            'Retail Sales<br>$1.8B'
         ],
-        color=['#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0',
-               '#10b981', '#34d399', '#fbbf24', '#3b82f6'],
-        x=[0.0, 0.25, 0.5, 0.5, 0.5, 0.75, 0.95, 0.95, 0.95],
-        y=[0.5, 0.5, 0.2, 0.5, 0.8, 0.5, 0.3, 0.6, 0.85]
+        color=['#047857', '#059669', '#10b981', '#34d399', '#6ee7b7',
+               '#10b981', '#34d399'],
+        x=[0.0, 0.25, 0.5, 0.5, 0.5, 0.75, 1.0],
+        y=[0.5, 0.5, 0.15, 0.5, 0.85, 0.5, 0.5]
     ),
     link=dict(
-        source=[0, 1, 1, 1, 2, 3, 4, 5, 5, 5],
-        target=[1, 2, 3, 4, 5, 5, 5, 6, 7, 8],
-        value=[445, 180, 120, 145, 180, 120, 145, 320, 75, 50],
+        source=[0, 1, 1, 1, 2, 3, 4, 5],
+        target=[1, 2, 3, 4, 5, 5, 5, 6],
+        value=[445, 180, 120, 145, 540, 360, 435, 1800],
         color=['rgba(16,185,129,0.3)', 'rgba(52,211,153,0.3)', 'rgba(110,231,183,0.3)',
-               'rgba(167,243,208,0.3)', 'rgba(16,185,129,0.3)', 'rgba(110,231,183,0.3)',
-               'rgba(167,243,208,0.3)', 'rgba(52,211,153,0.3)', 'rgba(251,191,36,0.3)',
-               'rgba(59,130,246,0.3)']
+               'rgba(167,243,208,0.3)', 'rgba(16,185,129,0.25)', 'rgba(52,211,153,0.25)',
+               'rgba(110,231,183,0.25)', 'rgba(16,185,129,0.3)'],
+        hovertemplate='%{source.label} → %{target.label}<br>$%{value}M<extra></extra>'
     )
 )])
 fig_sankey.update_layout(
-    title=dict(text="Hemp Industry Value Flow ($M)", font=dict(size=18, color='#f3f4f6')),
+    title=dict(text="Hemp Industry Value Chain ($M)", font=dict(size=18, color='#f3f4f6')),
     height=450,
     paper_bgcolor='rgba(0,0,0,0)',
     font=dict(color='#d1d5db', size=12, family='Space Grotesk'),
